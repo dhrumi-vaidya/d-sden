@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useLocation } from "wouter";
 import { TerminalInput } from "./TerminalInput";
 import { TerminalOutput } from "./TerminalOutput";
 import { processCommand } from "@/lib/terminal-logic";
@@ -12,8 +13,20 @@ export function Terminal() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [bootSequence, setBootSequence] = useState(true);
   const [showIdleSuggestions, setShowIdleSuggestions] = useState(false);
+  const [sessionId] = useState(() =>
+    Math.random().toString(36).slice(2, 6)
+  );
+  const [sessionStartedAt] = useState(() => Date.now());
+  const [activeTime, setActiveTime] = useState("0:00");
+  const [isPulsing, setIsPulsing] = useState(false);
+  const [systemMessage, setSystemMessage] = useState<string | null>(null);
+  const [lastCommand, setLastCommand] = useState<string | null>(null);
+  const [previewProjectKey, setPreviewProjectKey] = useState<string | null>(null);
+  const [previewIndex, setPreviewIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const outputRef = useRef<HTMLDivElement>(null);
+  const forceScrollNext = useRef(false);
+  const [, setLocation] = useLocation();
 
   // Focus input on click anywhere
   const handleContainerClick = () => {
@@ -23,13 +36,36 @@ export function Terminal() {
     }
   };
 
-  // Auto-scroll to bottom
+  // Session active time (updates every second)
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+    const timer = setInterval(() => {
+      const elapsedMs = Date.now() - sessionStartedAt;
+      const totalSeconds = Math.floor(elapsedMs / 1000);
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      setActiveTime(`${minutes}:${seconds.toString().padStart(2, "0")}`);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [sessionStartedAt]);
+
+  // Auto-scroll to bottom on new output
+  useEffect(() => {
+    const el = outputRef.current;
+    if (!el) return;
+
+    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    forceScrollNext.current = false;
   }, [history, bootSequence]);
 
   const handleCommand = useCallback(async (input: string) => {
     if (!input.trim()) return;
+
+    const primary = input.trim().split(" ")[0].toLowerCase();
+    setLastCommand(primary);
+
+    // System feedback
+    setIsPulsing(true);
+    setSystemMessage(`[sys] command executed: ${primary}`);
 
     setIsProcessing(true);
     setShowIdleSuggestions(false);
@@ -38,6 +74,16 @@ export function Terminal() {
     await new Promise(r => setTimeout(r, 150));
 
     const result = processCommand(input);
+
+    if (result === "NAVIGATE_HOME") {
+      setIsProcessing(false);
+      setTimeout(() => {
+        setIsPulsing(false);
+        setSystemMessage(null);
+        setLocation("/");
+      }, 150);
+      return;
+    }
 
     if (result === "CLEAR_SIGNAL") {
       setHistory([]);
@@ -52,6 +98,11 @@ export function Terminal() {
     }
 
     setIsProcessing(false);
+    // Stop pulse and clear system message after a short delay
+    setTimeout(() => {
+      setIsPulsing(false);
+      setSystemMessage(null);
+    }, 600);
     
     // Keep focus
     setTimeout(() => inputRef.current?.focus(), 10);
@@ -67,28 +118,59 @@ export function Terminal() {
     return () => clearTimeout(timer);
   }, [handleCommand]);
 
-  // Idle suggestions near prompt
+  // Idle suggestions near prompt (first-time guidance)
   useEffect(() => {
     if (bootSequence) return;
+    if (history.length === 0) return;
     const timer = setTimeout(() => {
       setShowIdleSuggestions(true);
-    }, 3000);
+    }, 2500);
     return () => clearTimeout(timer);
   }, [history, bootSequence]);
 
-  const SuggestionChip = ({ cmd }: { cmd: string }) => (
+  // Keyboard navigation for image preview
+  useEffect(() => {
+    if (!previewProjectKey) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setPreviewProjectKey(null);
+      } else if (e.key === "ArrowRight") {
+        setPreviewIndex((idx) => idx + 1);
+      } else if (e.key === "ArrowLeft") {
+        setPreviewIndex((idx) => (idx > 0 ? idx - 1 : 0));
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [previewProjectKey]);
+
+  const SuggestionChip = ({
+    cmd,
+    alias,
+  }: {
+    cmd: string;
+    alias?: string;
+  }) => (
     <button 
       onClick={(e) => {
         e.stopPropagation();
+        // When user clicks a suggestion, always scroll to newest output.
+        forceScrollNext.current = true;
         handleCommand(cmd);
       }} 
       className={cn(
-        "px-3 py-1 text-xs border border-terminal-dim/30 rounded bg-terminal-dim/10",
-        "text-terminal-fg hover:text-terminal-accent hover:border-terminal-accent/50 hover:bg-terminal-accent/10",
+        "px-3 py-1 text-xs border rounded bg-terminal-dim/10",
+        lastCommand === cmd
+          ? "border-terminal-accent/70 text-terminal-accent bg-terminal-accent/10"
+          : "border-terminal-dim/30 text-terminal-fg hover:text-terminal-accent hover:border-terminal-accent/50 hover:bg-terminal-accent/10",
         "transition-colors cursor-pointer active:scale-95"
       )}
+      title={alias ? `${cmd} (${alias})` : cmd}
     >
-      {cmd}
+      <span>{cmd}</span>
+      {alias && (
+        <span className="ml-1 text-[10px] text-terminal-dim">({alias})</span>
+      )}
     </button>
   );
 
@@ -118,12 +200,36 @@ export function Terminal() {
 
   return (
     <div 
-      className="min-h-screen w-full bg-terminal-bg text-terminal-fg font-mono p-4 md:p-8 scanlines overflow-y-auto"
+      className="h-screen w-full bg-terminal-bg text-terminal-fg font-mono scanlines overflow-hidden"
       onClick={handleContainerClick}
     >
-      <div className="max-w-4xl mx-auto pb-32">
-        {/* Header / Intro */}
-        <div className="mb-8 select-none">
+      <div className="max-w-4xl mx-auto h-full flex flex-col p-4 md:p-8 pb-4">
+        {/* Global system context */}
+        <div className="mb-4 flex items-center justify-between text-xs text-terminal-dim select-none">
+          <div className="flex items-center gap-2">
+            <span
+              className={cn(
+                "w-2 h-2 rounded-full bg-terminal-success",
+                isPulsing && "animate-pulse"
+              )}
+            />
+            <span>system.active</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div>
+              <span className="mr-1">session:</span>
+              <span className="text-terminal-fg">{sessionId}</span>
+            </div>
+            <span className="text-terminal-dim">|</span>
+            <div>
+              <span className="mr-1">active:</span>
+              <span className="text-terminal-fg">{activeTime}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Header / Intro (sticky) */}
+        <div className="mb-4 select-none sticky top-0 z-20 bg-terminal-bg pb-3 border-b border-terminal-border/60">
           <div className="mb-2">
             <h1 className="text-lg md:text-xl font-bold text-terminal-accent">
               Frontend System Interface
@@ -133,35 +239,105 @@ export function Terminal() {
             </div>
           </div>
           <div className="h-px w-full max-w-md bg-terminal-border/60 mb-3" />
-          <p className="text-terminal-dim text-sm mb-4">
+          <p className="text-terminal-dim text-sm mb-2">
             Type <span className="text-terminal-success">'help'</span> or click a command to explore.
           </p>
+          {systemMessage && (
+            <div className="text-xs text-terminal-dim mb-2">
+              {systemMessage}
+            </div>
+          )}
           <div className="flex flex-wrap gap-2 items-center">
              <span className="text-terminal-dim text-xs mr-2">Suggested:</span>
-             <SuggestionChip cmd="overview" />
-             <SuggestionChip cmd="projects" />
-             <SuggestionChip cmd="recruiter" />
+             <SuggestionChip cmd="status" alias="s" />
+             <SuggestionChip cmd="projects" alias="p" />
+             <SuggestionChip cmd="arch" alias="a" />
+             <SuggestionChip cmd="recruiter" alias="r" />
           </div>
         </div>
 
-        {/* Output History */}
-        <TerminalOutput history={history} onCommandClick={handleCommand} />
+        {/* Output History (scrollable middle region) */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden relative" ref={outputRef}>
+          {/* Optional fade gradients */}
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-4 bg-gradient-to-b from-terminal-bg to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-4 bg-gradient-to-t from-terminal-bg to-transparent" />
 
-        {/* Input Line */}
-        <TerminalInput 
-            onSubmit={handleCommand} 
-            inputRef={inputRef} 
-            isProcessing={isProcessing} 
-        />
-
-        {showIdleSuggestions && (
-          <div className="pl-10 mt-2 text-xs text-terminal-dim">
-            Tip: type <span className="text-terminal-success">recruiter</span> for a 60-second overview.
+          <div className="pt-2 pb-8">
+            <TerminalOutput
+              history={history}
+              onCommandClick={handleCommand}
+              onPreviewProject={(key) => {
+                setPreviewProjectKey(key);
+                setPreviewIndex(0);
+              }}
+            />
           </div>
-        )}
-        
-        <div ref={scrollRef} />
+        </div>
+
+        {/* Input Line (sticky bottom) */}
+        <div className="sticky bottom-0 z-20 bg-terminal-bg pt-2 border-t border-terminal-border/60">
+          <TerminalInput 
+              onSubmit={handleCommand} 
+              inputRef={inputRef} 
+              isProcessing={isProcessing} 
+          />
+
+          {showIdleSuggestions && (
+            <div className="pl-10 mt-2 text-xs text-terminal-dim">
+              Tip: You can click commands, use shortcuts like{" "}
+              <span className="text-terminal-success">p</span>,{" "}
+              <span className="text-terminal-success">a</span>,{" "}
+              <span className="text-terminal-success">r</span>, or type normally.
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Image preview overlay */}
+      {previewProjectKey && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-40">
+          <div className="max-w-3xl w-full mx-4 border border-terminal-border bg-terminal-bg/95 rounded-md p-4 flex flex-col gap-3">
+            <div className="flex items-center justify-between text-xs text-terminal-dim mb-1">
+              <span>Preview: {previewProjectKey}</span>
+              <button
+                type="button"
+                className="px-2 py-0.5 rounded border border-terminal-dim/60 text-terminal-dim hover:border-terminal-accent hover:text-terminal-accent text-[11px] cursor-pointer"
+                onClick={() => setPreviewProjectKey(null)}
+              >
+                Close (Esc)
+              </button>
+            </div>
+            <div className="flex-1 min-h-[200px] flex items-center justify-center bg-terminal-bg border border-terminal-border/60 rounded">
+              {/* The actual image list is resolved inside the TerminalOutput via known keys.
+                  For now we keep this container simple and let the img be provided via CSS background or future wiring. */}
+              <span className="text-terminal-dim text-xs">
+                Screenshot {previewIndex + 1} — add real project images for this slot.
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-[11px] text-terminal-dim mt-1">
+              <div>
+                Use ← → to switch screenshots, Esc to close.
+              </div>
+              <div className="space-x-2">
+                <button
+                  type="button"
+                  className="px-2 py-0.5 rounded border border-terminal-dim/60 hover:border-terminal-accent hover:text-terminal-accent cursor-pointer"
+                  onClick={() => setPreviewIndex((idx) => (idx > 0 ? idx - 1 : 0))}
+                >
+                  Prev
+                </button>
+                <button
+                  type="button"
+                  className="px-2 py-0.5 rounded border border-terminal-dim/60 hover:border-terminal-accent hover:text-terminal-accent cursor-pointer"
+                  onClick={() => setPreviewIndex((idx) => idx + 1)}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

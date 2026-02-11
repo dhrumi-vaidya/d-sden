@@ -156,7 +156,7 @@ export const commands: Record<string, CommandDefinition> = {
     name: "help",
     description: "List available commands",
     handler: () =>
-      "Available commands: help, status, overview (o), projects (p), project, skills (s), arch, about (me), experience (exp), education, recruiter, contact, li, clear.\n\n" +
+      "Available commands: help, status, overview (o), projects (p), project, skills (s), arch, about (me), experience (exp), education, recruiter, contact, li, back, clear.\n\n" +
       "Flags:\n" +
       "  --deep    Detailed view (where supported)",
   },
@@ -278,6 +278,11 @@ export const commands: Record<string, CommandDefinition> = {
     description: "LinkedIn profile shortcut",
     handler: () =>
       "LinkedIn profile: linkedin.com/in/dhrumi-vaidya  [Open]  [Copy LinkedIn URL]",
+  },
+  back: {
+    name: "back",
+    description: "Return to landing view",
+    handler: () => "NAVIGATE_HOME",
   },
   arch: {
     name: "arch",
