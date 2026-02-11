@@ -156,7 +156,7 @@ export const commands: Record<string, CommandDefinition> = {
     name: "help",
     description: "List available commands",
     handler: () =>
-      "Available commands: help, status, overview (o), projects (p), project, skills (s), arch, about (me), experience (exp), education, recruiter, contact, li, back, clear.\n\n" +
+      "Available commands: help, status, overview (o), projects (p), project, skills (s), arch, about (me), experience (exp), education, recruiter, contact, li, back, return, quick, clear.\n\n" +
       "Flags:\n" +
       "  --deep    Detailed view (where supported)",
   },
@@ -182,7 +182,9 @@ export const commands: Record<string, CommandDefinition> = {
       "› [Kutumb OS]\n" +
       "› [Finance Tracker]\n\n" +
       "[Quick access]\n" +
-      "[projects]  [skills]  [experience]  [arch]  [recruiter]  [contact]",
+      "Email: dhrumi.vaidy@gmail.com\n" +
+      "LinkedIn: linkedin.com/in/dhrumi-vaidya\n" +
+      "[resume]  [projects]  [skills]  [experience]  [arch]  [recruiter]  [contact]",
   },
   projects: {
     name: "projects",
@@ -247,6 +249,15 @@ export const commands: Record<string, CommandDefinition> = {
       return node.content as string;
     },
   },
+  quick: {
+    name: "quick",
+    description: "Quick access summary",
+    handler: () =>
+      "[Quick access]\n" +
+      "Email: dhrumi.vaidy@gmail.com\n" +
+      "LinkedIn: linkedin.com/in/dhrumi-vaidya\n" +
+      "[resume]  [projects]  [skills]  [experience]  [arch]  [recruiter]  [contact]",
+  },
   // Aliases for quicker navigation
   o: {
     name: "o",
@@ -282,6 +293,11 @@ export const commands: Record<string, CommandDefinition> = {
   back: {
     name: "back",
     description: "Return to landing view",
+    handler: () => "NAVIGATE_HOME",
+  },
+  return: {
+    name: "return",
+    description: "Alias for back (return to landing view)",
     handler: () => "NAVIGATE_HOME",
   },
   arch: {

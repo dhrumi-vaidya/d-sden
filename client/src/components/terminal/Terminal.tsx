@@ -85,6 +85,8 @@ export function Terminal({ initialCommand }: { initialCommand?: string } = {}) {
         ? "overview"
         : primary === "p"
         ? "projects"
+        : primary === "s"
+        ? "skills"
         : primary === "a"
         ? "arch"
         : primary === "r"
@@ -130,7 +132,14 @@ export function Terminal({ initialCommand }: { initialCommand?: string } = {}) {
     // Simulate slight processing delay for "realism"
     await new Promise(r => setTimeout(r, 150));
 
-    const result = processCommand(input);
+    // Normalize input string for alias commands before handing to processor
+    let normalizedInput = input;
+    if (["o", "p", "s", "a", "r"].includes(primary)) {
+      const rest = input.slice(primary.length);
+      normalizedInput = `${base}${rest}`;
+    }
+
+    const result = processCommand(normalizedInput);
 
     if (result === "NAVIGATE_HOME") {
       setIsProcessing(false);

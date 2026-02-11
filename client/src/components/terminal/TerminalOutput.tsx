@@ -667,6 +667,7 @@ const FormattedText = ({ text, onCommandClick }: FormattedTextProps) => {
           arch: "View frontend architecture principles",
           recruiter: "Open recruiter-friendly profile view",
           contact: "Get contact information",
+          resume: "Open resume preview",
           "Job Portal Web Application": "Open details for the job portal UI",
           "Kutumb OS": "Open details for the family management platform",
           "Finance Tracker": "Open details for the finance tracker UI",
@@ -736,6 +737,13 @@ const FormattedText = ({ text, onCommandClick }: FormattedTextProps) => {
                       "_blank",
                       "noopener,noreferrer"
                     );
+                  }
+                  return;
+                }
+
+                if (label.toLowerCase() === "resume") {
+                  if (typeof window !== "undefined") {
+                    window.open("/dummy-project.png", "_blank", "noopener,noreferrer");
                   }
                   return;
                 }
