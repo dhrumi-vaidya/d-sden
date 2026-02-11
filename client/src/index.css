@@ -9,6 +9,7 @@
 
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
+  --color-muted-foreground: hsl(var(--muted-foreground));
 
   --color-terminal-bg: hsl(var(--terminal-bg));
   --color-terminal-fg: hsl(var(--terminal-fg));
@@ -28,6 +29,7 @@
   /* Default to Light Mode for the landing page */
   --background: 0 0% 100%;
   --foreground: 240 10% 4%;
+  --muted-foreground: 240 5% 45%;
 
   --terminal-bg: 240 10% 4%;
   --terminal-fg: 0 0% 90%;
