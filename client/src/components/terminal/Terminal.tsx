@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { TerminalInput } from "./TerminalInput";
 import { TerminalOutput } from "./TerminalOutput";
 import { processCommand } from "@/lib/terminal-logic";
@@ -11,6 +11,7 @@ export function Terminal() {
   const [history, setHistory] = useState<Command[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [bootSequence, setBootSequence] = useState(true);
+  const [showIdleSuggestions, setShowIdleSuggestions] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -27,18 +28,11 @@ export function Terminal() {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [history, bootSequence]);
 
-  // Boot Sequence
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setBootSequence(false);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const handleCommand = async (input: string) => {
+  const handleCommand = useCallback(async (input: string) => {
     if (!input.trim()) return;
 
     setIsProcessing(true);
+    setShowIdleSuggestions(false);
     
     // Simulate slight processing delay for "realism"
     await new Promise(r => setTimeout(r, 150));
@@ -61,7 +55,26 @@ export function Terminal() {
     
     // Keep focus
     setTimeout(() => inputRef.current?.focus(), 10);
-  };
+  }, []);
+
+  // Boot Sequence + initial overview
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setBootSequence(false);
+      // Automatically show overview on first load
+      handleCommand("overview");
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [handleCommand]);
+
+  // Idle suggestions near prompt
+  useEffect(() => {
+    if (bootSequence) return;
+    const timer = setTimeout(() => {
+      setShowIdleSuggestions(true);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [history, bootSequence]);
 
   const SuggestionChip = ({ cmd }: { cmd: string }) => (
     <button 
@@ -111,22 +124,28 @@ export function Terminal() {
       <div className="max-w-4xl mx-auto pb-32">
         {/* Header / Intro */}
         <div className="mb-8 select-none">
-          <h1 className="text-lg md:text-xl font-bold text-terminal-accent mb-2">
-            Frontend System Interface v1.0
-          </h1>
+          <div className="mb-2">
+            <h1 className="text-lg md:text-xl font-bold text-terminal-accent">
+              Frontend System Interface
+            </h1>
+            <div className="text-terminal-dim text-xs mt-0.5">
+              v1.0
+            </div>
+          </div>
+          <div className="h-px w-full max-w-md bg-terminal-border/60 mb-3" />
           <p className="text-terminal-dim text-sm mb-4">
-            Type <span className="text-terminal-success">'help'</span> to explore available commands.
+            Type <span className="text-terminal-success">'help'</span> or click a command to explore.
           </p>
           <div className="flex flex-wrap gap-2 items-center">
              <span className="text-terminal-dim text-xs mr-2">Suggested:</span>
-             <SuggestionChip cmd="status" />
-             <SuggestionChip cmd="projects --deep" />
-             <SuggestionChip cmd="arch" />
+             <SuggestionChip cmd="overview" />
+             <SuggestionChip cmd="projects" />
+             <SuggestionChip cmd="recruiter" />
           </div>
         </div>
 
         {/* Output History */}
-        <TerminalOutput history={history} />
+        <TerminalOutput history={history} onCommandClick={handleCommand} />
 
         {/* Input Line */}
         <TerminalInput 
@@ -134,6 +153,12 @@ export function Terminal() {
             inputRef={inputRef} 
             isProcessing={isProcessing} 
         />
+
+        {showIdleSuggestions && (
+          <div className="pl-10 mt-2 text-xs text-terminal-dim">
+            Tip: type <span className="text-terminal-success">recruiter</span> for a 60-second overview.
+          </div>
+        )}
         
         <div ref={scrollRef} />
       </div>
