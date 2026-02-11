@@ -1,0 +1,144 @@
+Below is a single, consolidated Lovable super-prompt that embeds everything:
+terminal-first UI, CLI spec, homepage command flow, and Frontend Infra / UI Platform / systems-leaning FE alignment.
+
+This is ready to copy-paste into Lovable or any UI-gen tool.
+
+Lovable Prompt: Terminal-First, FAANG-Aligned, Frontend Infrastructure Portfolio
+
+Design a terminal-first, mobile-first developer portfolio that behaves like a production-grade frontend system, not a personal website.
+
+The target persona is a Frontend Infrastructure / UI Platform / systems-leaning frontend engineer.
+The interface must communicate FAANG-level engineering rigor, architectural thinking, performance awareness, and ownership—without marketing language.
+
+Core Concept
+
+The portfolio is an interactive system interface inspired by internal developer tools, CLIs, IDEs, and system dashboards.
+Visitors explore the portfolio by issuing commands, not scrolling pages.
+
+This should feel like inspecting a real engineering system.
+
+Primary Interface (Terminal-First)
+
+Terminal-inspired UI as the primary navigation surface
+
+Command-driven exploration with autocomplete and tap-friendly suggestions
+
+Dark-mode first, high-contrast, readable typography
+
+Visual inspiration from system design tools, internal dashboards, IDEs—not dribbble or marketing sites
+
+Mobile-First Constraints (Non-Negotiable)
+
+Designed for small screens first
+
+Terminal interactions optimized for tap, swipe, and expandable blocks
+
+No hover-only affordances
+
+Fast initial load, low cognitive overhead
+
+CLI COMMAND SYSTEM (MUST BE IMPLEMENTED)
+
+Global behavior
+
+Commands autocomplete
+
+Output is concise by default
+
+Depth is unlocked via flags (--deep, --arch, --impact)
+
+No verbose dumps unless explicitly requested
+
+Core commands
+
+help        → list available commands and intent
+status      → system overview / landing state
+projects    → major systems and platforms shipped
+project X   → deep dive into a specific system
+skills      → capability map by system domain
+arch        → frontend architecture philosophy
+perf        → performance strategy and case studies
+tooling     → build systems, CI/CD, internal tools
+decisions   → key engineering trade-offs
+about       → concise technical profile
+contact    → minimal professional contact
+
+
+Required flags
+
+--deep → architecture, trade-offs, lessons
+
+--impact → measurable outcomes (latency, DX, scale)
+
+--infra → platform-level skills only
+
+Homepage / First-10-Seconds Experience
+
+On load, show a fast, minimal terminal boot:
+
+Frontend System Interface v1.0
+Type 'help' to explore
+
+
+Provide tap-friendly suggested commands:
+
+Suggested:
+• status
+• projects
+• arch
+
+
+Executing status must immediately reveal:
+
+Role focus: Frontend Infrastructure / UI Platform
+
+Core domains: Rendering, Performance, Tooling, Architecture
+
+Evidence of scale and ownership
+
+The goal is that within 10 seconds, a reviewer understands:
+This engineer builds and scales frontend systems.
+
+Gamification (Subtle, Serious, Non-Toy)
+
+Projects are missions defined by constraints, scale, and outcomes
+
+Skills evolve as capabilities, not percentages
+
+Experience is shown as system maturity, not a timeline
+
+Achievements reflect real engineering milestones (scale, reliability, performance, platform adoption)
+
+Animation Rules (Strict)
+
+Every animation must communicate state, hierarchy, or progress
+
+No decorative motion
+
+Animations must feel like system feedback (loading, resolving, expanding, unlocking)
+
+Performance-safe and minimal
+
+Content Principles
+
+No buzzwords
+
+No motivational copy
+
+No résumé language
+
+Assume a technical audience
+
+Content should read like:
+
+Internal documentation
+
+Design review summaries
+
+Architecture notes
+
+Goal
+
+Make the viewer feel like they are reviewing a well-designed frontend platform and conclude:
+
+“This developer thinks in systems, understands trade-offs, and builds frontend infrastructure at scale.”
