@@ -330,6 +330,12 @@ export const commands: Record<string, CommandDefinition> = {
     description: "Contact channels",
     handler: () => mockFileSystem.contact.content as string,
   },
+  why: {
+    name: "why",
+    description: "Why this portfolio uses a system interface",
+    handler: () =>
+      "This portfolio is built as a system to reflect how I think about frontend engineering: structure, constraints, and trade-offs.",
+  },
   recruiter: {
     name: "recruiter",
     description: "Quick review mode for recruiters",

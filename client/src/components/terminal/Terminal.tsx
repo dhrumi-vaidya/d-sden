@@ -21,12 +21,29 @@ export function Terminal() {
   const [isPulsing, setIsPulsing] = useState(false);
   const [systemMessage, setSystemMessage] = useState<string | null>(null);
   const [lastCommand, setLastCommand] = useState<string | null>(null);
+  const [recommendedCmd, setRecommendedCmd] = useState<string | null>("overview");
+  const [visited, setVisited] = useState({
+    overview: false,
+    projects: false,
+    arch: false,
+    recruiter: false,
+  });
+  const [systemFlags, setSystemFlags] = useState({
+    contextInit: false,
+    recruiter: false,
+    projectEvidence: false,
+  });
   const [previewProjectKey, setPreviewProjectKey] = useState<string | null>(null);
   const [previewIndex, setPreviewIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const outputRef = useRef<HTMLDivElement>(null);
   const forceScrollNext = useRef(false);
   const [, setLocation] = useLocation();
+  const [theme, setTheme] = useState<"dark" | "light">(() => {
+    if (typeof window === "undefined") return "dark";
+    const stored = window.localStorage.getItem("fsi-theme");
+    return stored === "light" ? "light" : "dark";
+  });
 
   // Focus input on click anywhere
   const handleContainerClick = () => {
@@ -61,12 +78,52 @@ export function Terminal() {
     if (!input.trim()) return;
 
     const primary = input.trim().split(" ")[0].toLowerCase();
-    setLastCommand(primary);
 
-    // System feedback
+    // Normalize aliases for exploration and recommendations
+    const base =
+      primary === "o"
+        ? "overview"
+        : primary === "p"
+        ? "projects"
+        : primary === "a"
+        ? "arch"
+        : primary === "r"
+        ? "recruiter"
+        : primary;
+
+    setLastCommand(base);
+
+    // Mark major sections as visited
+    if (base === "overview" || base === "projects" || base === "arch" || base === "recruiter") {
+      setVisited((prev) => ({ ...prev, [base]: true }));
+    }
+
+    // Context-aware next suggestion
+    if (base === "overview") {
+      setRecommendedCmd("projects");
+    } else if (base === "projects") {
+      setRecommendedCmd("arch");
+    } else if (base === "arch") {
+      setRecommendedCmd("recruiter");
+    } else if (base === "recruiter") {
+      setRecommendedCmd("projects");
+    }
+
+    // One-time system messages
+    setSystemFlags((prev) => {
+      const next = { ...prev };
+      if (!next.contextInit) {
+        setSystemMessage("[sys] Initializing frontend system interface…");
+        next.contextInit = true;
+      } else if (base === "recruiter" && !next.recruiter) {
+        setSystemMessage("[sys] switching to recruiter view");
+        next.recruiter = true;
+      }
+      return next;
+    });
+
+    // System feedback pulse
     setIsPulsing(true);
-    setSystemMessage(`[sys] command executed: ${primary}`);
-
     setIsProcessing(true);
     setShowIdleSuggestions(false);
     
@@ -160,7 +217,7 @@ export function Terminal() {
       }} 
       className={cn(
         "px-3 py-1 text-xs border rounded bg-terminal-dim/10",
-        lastCommand === cmd
+        recommendedCmd === cmd
           ? "border-terminal-accent/70 text-terminal-accent bg-terminal-accent/10"
           : "border-terminal-dim/30 text-terminal-fg hover:text-terminal-accent hover:border-terminal-accent/50 hover:bg-terminal-accent/10",
         "transition-colors cursor-pointer active:scale-95"
@@ -176,7 +233,12 @@ export function Terminal() {
 
   if (bootSequence) {
     return (
-      <div className="h-screen w-full bg-terminal-bg flex flex-col items-center justify-center text-terminal-accent font-mono">
+      <div
+        className={cn(
+          "h-screen w-full flex flex-col items-center justify-center font-mono terminal-theme",
+          theme === "light" ? "terminal-theme--light" : "terminal-theme--dark"
+        )}
+      >
         <div className="w-64 space-y-2">
             <div className="flex justify-between text-xs text-terminal-dim mb-1">
                 <span>BIOS_CHECK</span>
@@ -200,7 +262,10 @@ export function Terminal() {
 
   return (
     <div 
-      className="h-screen w-full bg-terminal-bg text-terminal-fg font-mono scanlines overflow-hidden"
+      className={cn(
+        "h-screen w-full font-mono scanlines overflow-hidden terminal-theme",
+        theme === "light" ? "terminal-theme--light" : "terminal-theme--dark"
+      )}
       onClick={handleContainerClick}
     >
       <div className="max-w-4xl mx-auto h-full flex flex-col p-4 md:p-8 pb-4">
@@ -225,6 +290,22 @@ export function Terminal() {
               <span className="mr-1">active:</span>
               <span className="text-terminal-fg">{activeTime}</span>
             </div>
+            <button
+              type="button"
+              className="ml-3 px-2 py-0.5 rounded border border-terminal-border/60 text-terminal-dim hover:text-terminal-accent hover:border-terminal-accent/60 text-[11px] cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                setTheme((prev) => {
+                  const next = prev === "dark" ? "light" : "dark";
+                  if (typeof window !== "undefined") {
+                    window.localStorage.setItem("fsi-theme", next);
+                  }
+                  return next;
+                });
+              }}
+            >
+              Theme: {theme === "dark" ? "Dark" : "Light"}
+            </button>
           </div>
         </div>
 
@@ -254,6 +335,24 @@ export function Terminal() {
              <SuggestionChip cmd="arch" alias="a" />
              <SuggestionChip cmd="recruiter" alias="r" />
           </div>
+
+          {/* Exploration indicator */}
+          <div className="mt-3 flex flex-wrap gap-2 text-[11px]">
+            {["overview", "projects", "arch", "recruiter"].map((key) => (
+              <span
+                key={key}
+                className={cn(
+                  "px-2 py-0.5 rounded-full border text-xs",
+                  visited[key as keyof typeof visited]
+                    ? "border-terminal-accent/70 text-terminal-accent bg-terminal-accent/10"
+                    : "border-terminal-dim/40 text-terminal-dim"
+                )}
+              >
+                {visited[key as keyof typeof visited] ? "✓ " : ""}
+                {key}
+              </span>
+            ))}
+          </div>
         </div>
 
         {/* Output History (scrollable middle region) */}
@@ -269,6 +368,15 @@ export function Terminal() {
               onPreviewProject={(key) => {
                 setPreviewProjectKey(key);
                 setPreviewIndex(0);
+              }}
+              onSystemEvent={(event) => {
+                if (event === "projectEvidence") {
+                  setSystemFlags((prev) => {
+                    if (prev.projectEvidence) return prev;
+                    setSystemMessage("[sys] loading project evidence");
+                    return { ...prev, projectEvidence: true };
+                  });
+                }
               }}
             />
           </div>
@@ -295,7 +403,7 @@ export function Terminal() {
 
       {/* Image preview overlay */}
       {previewProjectKey && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-40">
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-60">
           <div className="max-w-3xl w-full mx-4 border border-terminal-border bg-terminal-bg/95 rounded-md p-4 flex flex-col gap-3">
             <div className="flex items-center justify-between text-xs text-terminal-dim mb-1">
               <span>Preview: {previewProjectKey}</span>
@@ -307,12 +415,34 @@ export function Terminal() {
                 Close (Esc)
               </button>
             </div>
-            <div className="flex-1 min-h-[200px] flex items-center justify-center bg-terminal-bg border border-terminal-border/60 rounded">
-              {/* The actual image list is resolved inside the TerminalOutput via known keys.
-                  For now we keep this container simple and let the img be provided via CSS background or future wiring. */}
-              <span className="text-terminal-dim text-xs">
-                Screenshot {previewIndex + 1} — add real project images for this slot.
-              </span>
+            <div className="flex-1 min-h-[200px] flex items-center justify-center bg-terminal-bg border border-terminal-border/60 rounded overflow-hidden">
+              {(() => {
+                const projectImages: Record<string, string[]> = {
+                  "job-portal": [
+                    "https://via.placeholder.com/1280x720?text=Job+Portal+UI+Screenshot",
+                  ],
+                  "finance-tracker": [
+                    "https://via.placeholder.com/1280x720?text=Finance+Tracker+UI+Screenshot",
+                  ],
+                };
+                const imgs = projectImages[previewProjectKey] || [];
+                if (!imgs.length) {
+                  return (
+                    <span className="text-terminal-dim text-xs">
+                      No screenshots configured yet for this project.
+                    </span>
+                  );
+                }
+                const index = ((previewIndex % imgs.length) + imgs.length) % imgs.length;
+                const src = imgs[index];
+                return (
+                  <img
+                    src={src}
+                    alt={`Screenshot ${index + 1} for ${previewProjectKey}`}
+                    className="max-h-[70vh] w-auto object-contain"
+                  />
+                );
+              })()}
             </div>
             <div className="flex items-center justify-between text-[11px] text-terminal-dim mt-1">
               <div>
@@ -322,7 +452,7 @@ export function Terminal() {
                 <button
                   type="button"
                   className="px-2 py-0.5 rounded border border-terminal-dim/60 hover:border-terminal-accent hover:text-terminal-accent cursor-pointer"
-                  onClick={() => setPreviewIndex((idx) => (idx > 0 ? idx - 1 : 0))}
+                  onClick={() => setPreviewIndex((idx) => idx - 1)}
                 >
                   Prev
                 </button>

@@ -10,7 +10,7 @@
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
   --color-muted-foreground: hsl(var(--muted-foreground));
-
+  
   --color-terminal-bg: hsl(var(--terminal-bg));
   --color-terminal-fg: hsl(var(--terminal-fg));
   --color-terminal-dim: hsl(var(--terminal-dim));
@@ -31,24 +31,81 @@
   --foreground: 240 10% 4%;
   --muted-foreground: 240 5% 45%;
 
-  --terminal-bg: 240 10% 4%;
-  --terminal-fg: 0 0% 90%;
-  --terminal-dim: 240 5% 50%;
-  --terminal-accent: 210 100% 60%;
-  --terminal-success: 142 70% 50%;
-  --terminal-warning: 45 90% 60%;
-  --terminal-error: 0 85% 60%;
-  --terminal-border: 240 5% 20%;
+  /* Semantic tokens (HSL components) */
+  --bg-primary: var(--background);
+  --bg-surface: 240 4% 98%;
+  --text-primary: 240 10% 4%;
+  --text-secondary: 240 5% 35%;
+  --text-muted: 240 5% 55%;
+  --border-subtle: 240 6% 85%;
+  --accent-primary: 210 10% 45%;
+  --accent-focus: 210 15% 40%;
+
+  /* Terminal tokens map to semantic tokens */
+  --terminal-bg: var(--bg-primary);
+  --terminal-fg: var(--text-primary);
+  --terminal-dim: var(--text-muted);
+  --terminal-accent: var(--accent-primary);
+  --terminal-success: 142 30% 35%;
+  --terminal-warning: 40 45% 45%;
+  --terminal-error: 0 55% 45%;
+  --terminal-border: var(--border-subtle);
 
   --radius: 0.5rem;
 }
 
-/* We still want the terminal to look like a terminal even when the root is light */
+/* Terminal theming */
 .terminal-theme {
-  --background: 240 10% 4%;
-  --foreground: 0 0% 90%;
   background-color: hsl(var(--terminal-bg));
   color: hsl(var(--terminal-fg));
+}
+
+.terminal-theme--dark {
+  --background: 230 15% 7%;
+  --foreground: 0 0% 93%;
+  --muted-foreground: 230 5% 55%;
+
+  --bg-primary: 230 15% 7%;
+  --bg-surface: 230 12% 11%;
+  --text-primary: 0 0% 93%;
+  --text-secondary: 230 5% 70%;
+  --text-muted: 230 5% 55%;
+  --border-subtle: 230 8% 22%;
+  --accent-primary: 210 12% 55%;
+  --accent-focus: 210 16% 60%;
+
+  --terminal-bg: var(--bg-primary);
+  --terminal-fg: var(--text-primary);
+  --terminal-dim: var(--text-muted);
+  --terminal-accent: var(--accent-primary);
+  --terminal-success: 140 35% 50%;
+  --terminal-warning: 40 70% 55%;
+  --terminal-error: 0 65% 55%;
+  --terminal-border: var(--border-subtle);
+}
+
+.terminal-theme--light {
+  --background: 0 0% 99%;
+  --foreground: 240 10% 4%;
+  --muted-foreground: 240 5% 45%;
+
+  --bg-primary: 0 0% 99%;
+  --bg-surface: 240 4% 96%;
+  --text-primary: 240 10% 4%;
+  --text-secondary: 240 5% 35%;
+  --text-muted: 240 5% 55%;
+  --border-subtle: 240 7% 84%;
+  --accent-primary: 210 12% 40%;
+  --accent-focus: 210 18% 35%;
+
+  --terminal-bg: var(--bg-primary);
+  --terminal-fg: var(--text-primary);
+  --terminal-dim: var(--text-muted);
+  --terminal-accent: var(--accent-primary);
+  --terminal-success: 140 35% 40%;
+  --terminal-warning: 40 65% 50%;
+  --terminal-error: 0 60% 50%;
+  --terminal-border: var(--border-subtle);
 }
 
 body {
@@ -78,14 +135,14 @@ input, textarea {
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-muted-foreground/20 rounded-full;
+  @apply bg-muted-foreground/40 rounded-full;
 }
 
-.terminal-theme::-webkit-scrollbar-track {
+.terminal-theme ::-webkit-scrollbar-track {
   @apply bg-terminal-bg;
 }
 
-.terminal-theme::-webkit-scrollbar-thumb {
+.terminal-theme ::-webkit-scrollbar-thumb {
   @apply bg-terminal-border rounded-full;
 }
 

@@ -405,9 +405,11 @@ const PROJECTS_DATA: ProjectEvidence[] = [
 const ProjectsView = ({
   onCommandClick,
   onPreviewProject,
+  onSystemEvent,
 }: {
   onCommandClick?: (cmd: string) => void;
   onPreviewProject?: (key: string) => void;
+  onSystemEvent?: (event: "projectEvidence") => void;
 }) => {
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -437,7 +439,14 @@ const ProjectsView = ({
         <button
           type="button"
           className="flex items-center justify-between w-full text-left text-terminal-fg cursor-pointer"
-          onClick={() => setOpenKey(isOpen ? null : keyName)}
+          onClick={() => {
+            const willOpen = !isOpen;
+            setOpenKey(willOpen ? keyName : null);
+            if (willOpen && onSystemEvent) {
+              onSystemEvent("projectEvidence");
+            }
+          }}
+          title={summary}
         >
           <span className="flex items-center gap-2">
             <span>{isOpen ? "▾" : "▸"}</span>
@@ -624,6 +633,7 @@ const Metric = ({
 interface FormattedTextProps {
   text: string;
   onCommandClick?: (cmd: string) => void;
+  onSystemEvent?: (event: "projectEvidence") => void;
 }
 
 const FormattedText = ({ text, onCommandClick }: FormattedTextProps) => {
@@ -653,6 +663,18 @@ const FormattedText = ({ text, onCommandClick }: FormattedTextProps) => {
 
         // Support simple [command] tokens that can be clicked
         const segments = line.split(/(\[[^\]]+\])/g);
+
+        const tooltipMap: Record<string, string> = {
+          projects: "Explore projects and systems",
+          skills: "View grouped skills by domain",
+          experience: "See experience and internships",
+          arch: "View frontend architecture principles",
+          recruiter: "Open recruiter-friendly profile view",
+          contact: "Get contact information",
+          "Job Portal Web Application": "Open details for the job portal UI",
+          "Kutumb OS": "Open details for the family management platform",
+          "Finance Tracker": "Open details for the finance tracker UI",
+        };
 
         return (
           <motion.div
@@ -741,6 +763,7 @@ const FormattedText = ({ text, onCommandClick }: FormattedTextProps) => {
                     type="button"
                     className="inline-flex items-center px-1.5 py-0.5 mx-0.5 rounded border border-terminal-dim/40 bg-terminal-dim/10 text-terminal-accent hover:border-terminal-accent hover:bg-terminal-accent/10 text-xs cursor-pointer focus-visible:outline focus-visible:outline-1 focus-visible:outline-terminal-accent/60"
                     onClick={handleClick}
+                    title={tooltipMap[label] || undefined}
                   >
                     {label}
                   </button>
@@ -816,10 +839,12 @@ export function TerminalOutput({
   history,
   onCommandClick,
   onPreviewProject,
+  onSystemEvent,
 }: {
   history: Command[];
   onCommandClick?: (cmd: string) => void;
   onPreviewProject?: (key: string) => void;
+  onSystemEvent?: (event: "projectEvidence") => void;
 }) {
   return (
     <div className="space-y-4">
