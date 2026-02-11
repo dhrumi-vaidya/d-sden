@@ -21,8 +21,7 @@ export default function LandingPage() {
   };
 
   const handleRecruiterView = () => {
-    setLocation("/terminal");
-    // Recruiter mode is clearly suggested once inside the terminal.
+    setLocation("/terminal?mode=recruiter");
   };
 
   return (

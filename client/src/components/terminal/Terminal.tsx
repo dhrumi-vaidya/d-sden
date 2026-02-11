@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function Terminal() {
+export function Terminal({ initialCommand }: { initialCommand?: string } = {}) {
   const [history, setHistory] = useState<Command[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [bootSequence, setBootSequence] = useState(true);
@@ -169,11 +169,11 @@ export function Terminal() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setBootSequence(false);
-      // Automatically show overview on first load
-      handleCommand("overview");
+      // Automatically show overview or an alternate initial command on first load
+      handleCommand(initialCommand || "overview");
     }, 1500);
     return () => clearTimeout(timer);
-  }, [handleCommand]);
+  }, [handleCommand, initialCommand]);
 
   // Idle suggestions near prompt (first-time guidance)
   useEffect(() => {
@@ -417,22 +417,7 @@ export function Terminal() {
             </div>
             <div className="flex-1 min-h-[200px] flex items-center justify-center bg-terminal-bg border border-terminal-border/60 rounded overflow-hidden">
               {(() => {
-                const projectImages: Record<string, string[]> = {
-                  "job-portal": [
-                    "https://via.placeholder.com/1280x720?text=Job+Portal+UI+Screenshot",
-                  ],
-                  "finance-tracker": [
-                    "https://via.placeholder.com/1280x720?text=Finance+Tracker+UI+Screenshot",
-                  ],
-                };
-                const imgs = projectImages[previewProjectKey] || [];
-                if (!imgs.length) {
-                  return (
-                    <span className="text-terminal-dim text-xs">
-                      No screenshots configured yet for this project.
-                    </span>
-                  );
-                }
+                const imgs = ["/dummy-project.png"];
                 const index = ((previewIndex % imgs.length) + imgs.length) % imgs.length;
                 const src = imgs[index];
                 return (
