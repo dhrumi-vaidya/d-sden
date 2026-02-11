@@ -1,0 +1,103 @@
+Design a minimal, mobile-first landing page for a developer portfolio that transitions into an existing terminal-based portfolio system.
+
+This page is not the portfolio itself. Its only job is to:
+
+Orient the visitor
+
+Set expectations
+
+Hand off cleanly into terminal mode
+
+Visual Theme (Light Mode Only)
+
+Light theme, high readability
+
+Clean, calm, neutral palette
+
+No gradients, no decoration for decoration’s sake
+
+Visual inspiration: internal docs, design tools, engineering dashboards
+
+The landing page must visually contrast with the dark terminal mode, making the transition feel intentional.
+
+Tone & Copy
+
+Technical, calm, confident
+
+No marketing language
+
+No “passionate developer” messaging
+
+Assume a technical audience
+
+Content Structure
+
+1. Header / Identity
+
+Name
+
+Role focus: Frontend Infrastructure / UI Platform / Systems-leaning Frontend
+
+Keep this understated and precise.
+
+2. What This Is
+One short paragraph:
+
+“This is my developer portfolio.
+It’s built as an interactive system rather than a static website.”
+
+3. How It Works
+Max 3 bullets, concise:
+
+Explore projects, architecture, and impact through a terminal interface
+
+Commands reveal depth (projects, arch, perf)
+
+Designed for engineers and technical reviewers
+
+4. Intent Signal
+One calm line reinforcing credibility:
+
+“The terminal reflects how I think about frontend systems: structure, constraints, and trade-offs.”
+
+Primary CTA (Mandatory)
+
+Fixed bottom-right button
+
+Label: “Enter Terminal Mode”
+
+Subtle but clearly visible
+
+No animation beyond a small state change (hover / tap feedback only)
+
+Clicking this transitions into the existing terminal system.
+
+Interaction Rules
+
+Mobile-first layout
+
+No hover-only interactions
+
+All spacing and typography optimized for scanning
+
+Zero unnecessary animation
+
+What NOT to Include
+
+No project cards
+
+No skills list
+
+No timelines
+
+No stats or metrics
+
+No dark theme here
+
+This page must stay intentionally minimal and defer all depth to terminal mode.
+
+Goal
+
+Before entering terminal mode, the visitor should think:
+
+“This person builds systems, not slides.”

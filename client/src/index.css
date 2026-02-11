@@ -25,15 +25,15 @@
 }
 
 :root {
-  /* Default to Dark Mode aesthetics as primary */
-  --background: 240 10% 4%; /* Very dark grey, almost black */
-  --foreground: 0 0% 95%;
+  /* Default to Light Mode for the landing page */
+  --background: 0 0% 100%;
+  --foreground: 240 10% 4%;
 
   --terminal-bg: 240 10% 4%;
   --terminal-fg: 0 0% 90%;
   --terminal-dim: 240 5% 50%;
-  --terminal-accent: 210 100% 60%; /* Vivid Blue */
-  --terminal-success: 142 70% 50%; /* Terminal Green */
+  --terminal-accent: 210 100% 60%;
+  --terminal-success: 142 70% 50%;
   --terminal-warning: 45 90% 60%;
   --terminal-error: 0 85% 60%;
   --terminal-border: 240 5% 20%;
@@ -41,9 +41,16 @@
   --radius: 0.5rem;
 }
 
+/* We still want the terminal to look like a terminal even when the root is light */
+.terminal-theme {
+  --background: 240 10% 4%;
+  --foreground: 0 0% 90%;
+  background-color: hsl(var(--terminal-bg));
+  color: hsl(var(--terminal-fg));
+}
+
 body {
-  @apply bg-terminal-bg text-terminal-fg font-mono antialiased overflow-hidden;
-  /* Prevent overscroll behavior on Mac */
+  @apply bg-background text-foreground font-sans antialiased;
   overscroll-behavior: none; 
 }
 
@@ -54,29 +61,33 @@ input, textarea {
 
 @media (min-width: 768px) {
   input, textarea {
-    font-size: 1rem !important; /* Reset to normal on desktop */
+    font-size: 1rem !important;
   }
 }
 
-/* Custom Scrollbar for the terminal feel */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-terminal-bg;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/20 rounded-full;
+}
+
+.terminal-theme::-webkit-scrollbar-track {
+  @apply bg-terminal-bg;
+}
+
+.terminal-theme::-webkit-scrollbar-thumb {
   @apply bg-terminal-border rounded-full;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-terminal-dim;
-}
-
-/* Blinking Cursor Animation */
+/* Blinking Cursor */
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
@@ -86,7 +97,7 @@ input, textarea {
   animation: blink 1s step-end infinite;
 }
 
-/* Scanline effect (subtle) */
+/* Scanline effect */
 .scanlines::before {
   content: " ";
   display: block;
