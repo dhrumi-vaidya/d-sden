@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { ArrowRight, Cpu, Layers, Zap } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { profileMeta } from "@/lib/profile-data";
 
 export default function LandingPage() {
   const [, setLocation] = useLocation();
@@ -16,12 +17,16 @@ export default function LandingPage() {
     if (typeof window === "undefined") return;
     window.localStorage.setItem("fsi-theme", theme);
   }, [theme]);
-  const handleEnterTerminal = () => {
+  const handleEnterDeveloperMode = () => {
     setLocation("/terminal");
   };
 
   const handleRecruiterView = () => {
-    setLocation("/terminal?mode=recruiter");
+    setLocation("/recruiter");
+  };
+
+  const handleNonTechView = () => {
+    setLocation("/non-tech");
   };
 
   return (
@@ -33,22 +38,32 @@ export default function LandingPage() {
           : "bg-white text-zinc-900"
       )}
     >
-      <main className="max-w-3xl mx-auto px-6 pt-20 pb-32 space-y-16">
+      <main className="mx-auto max-w-4xl space-y-12 px-6 pt-16 pb-24">
         {/* Header / Identity */}
-        <header className="space-y-2 flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Dhrumi Vaidya</h1>
-            <p className={cn("text-sm", theme === "dark" ? "text-zinc-400" : "text-zinc-600")}>
-              Frontend Engineer (Angular) · Ahmedabad, India
+        <header className="flex items-start justify-between gap-6">
+          <div className="space-y-2">
+            <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
+              Multi-mode portfolio
+            </p>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              {profileMeta.name}
+            </h1>
+            <p
+              className={cn(
+                "text-sm",
+                theme === "dark" ? "text-zinc-400" : "text-zinc-600",
+              )}
+            >
+              {profileMeta.headline}
             </p>
           </div>
           <button
             type="button"
             className={cn(
-              "ml-4 px-3 py-1 rounded-full border text-xs",
+              "ml-4 rounded-full border px-3 py-1 text-xs",
               theme === "dark"
                 ? "border-zinc-700 text-zinc-300 hover:border-zinc-400"
-                : "border-zinc-300 text-zinc-600 hover:border-zinc-500"
+                : "border-zinc-300 text-zinc-600 hover:border-zinc-500",
             )}
             onClick={() => setTheme((prev) => (prev === "dark" ? "light" : "dark"))}
           >
@@ -56,187 +71,171 @@ export default function LandingPage() {
           </button>
         </header>
 
-        <section className="space-y-1">
-            <p
-              className={cn(
-                "text-base font-medium",
-                theme === "dark" ? "text-zinc-50" : "text-zinc-900"
-              )}
-            >
-              Building production UI systems, not demo apps.
-            </p>
-            <p className={cn("text-sm", theme === "dark" ? "text-zinc-400" : "text-zinc-600")}>
-              This portfolio is an interactive system. Explore projects, architecture, and impact
-              through a terminal interface.
-            </p>
+        {/* Hero copy */}
+        <section className="max-w-3xl space-y-3">
+          <motion.p
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className={cn(
+              "text-base font-medium",
+              theme === "dark" ? "text-zinc-50" : "text-zinc-900",
+            )}
+          >
+            One portfolio, three views for different audiences.
+          </motion.p>
+          <p
+            className={cn(
+              "text-sm leading-relaxed",
+              theme === "dark" ? "text-zinc-400" : "text-zinc-600",
+            )}
+          >
+            Choose the view that matches how you want to read this profile. All
+            three show the same underlying work, but with different levels of
+            technical depth.
+          </p>
         </section>
 
-        {/* Visual terminal preview */}
-        <section className="grid md:grid-cols-[minmax(0,2fr)_minmax(0,1.5fr)] gap-8 items-start">
-          <div
+        {/* Mode cards */}
+        <section className="grid gap-4 md:grid-cols-3">
+          {/* Developer mode */}
+          <motion.article
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, delay: 0.05 }}
             className={cn(
-              "rounded-xl border p-4",
+              "flex flex-col justify-between rounded-2xl border p-4",
               theme === "dark"
                 ? "border-zinc-800 bg-zinc-900/40"
-                : "border-zinc-200 bg-zinc-50"
+                : "border-zinc-200 bg-zinc-50",
             )}
           >
-            <div className="flex items-center justify-between mb-3">
-              <div
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
+                Developer mode
+              </p>
+              <h2
                 className={cn(
-                  "flex items-center gap-2 text-xs font-mono",
-                  theme === "dark" ? "text-zinc-500" : "text-zinc-500"
+                  "text-sm font-semibold",
+                  theme === "dark" ? "text-zinc-50" : "text-zinc-900",
                 )}
               >
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                <span>Terminal preview</span>
-              </div>
-              <span className="text-[10px] text-zinc-400 uppercase tracking-wide">
-                Read-only
-              </span>
+                Terminal / System View
+              </h2>
+              <p
+                className={cn(
+                  "text-xs leading-relaxed",
+                  theme === "dark" ? "text-zinc-400" : "text-zinc-600",
+                )}
+              >
+                For engineers and technical reviewers. Explore commands, system
+                thinking, and implementation details in a terminal interface.
+              </p>
             </div>
-            <div className="rounded-md bg-zinc-900 text-zinc-50 font-mono text-xs p-3 space-y-2">
-              <div>
-                <span className="text-emerald-400">➜</span>{" "}
-                <span className="text-sky-400">~</span>{" "}
-                <span className="text-zinc-300">overview</span>
-              </div>
-              <div className="text-zinc-400">
-                Frontend Portfolio — Overview
-                <br />
-                Name: Dhrumi Vaidya
-                <br />
-                Role: Frontend Engineer (Angular)
-              </div>
-              <div className="pt-1">
-                <span className="text-zinc-500">Quick access:</span>{" "}
-                <span className="text-emerald-400">projects</span>{" "}
-                <span className="text-emerald-400">skills</span>{" "}
-                <span className="text-emerald-400">recruiter</span>
-              </div>
-              <div className="pt-3 border-t border-zinc-800">
-                <div>
-                  <span className="text-emerald-400">➜</span>{" "}
-                  <span className="text-sky-400">~</span>{" "}
-                  <span className="text-zinc-300">recruiter</span>
-                </div>
-                <div className="text-zinc-400">
-                  Compact, LinkedIn-style recruiter view rendered inside the terminal.
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Why this portfolio */}
-          <div className="space-y-4">
-            <h2
+            <button
+              type="button"
+              onClick={handleEnterDeveloperMode}
               className={cn(
-                "text-sm font-semibold",
-                theme === "dark" ? "text-zinc-100" : "text-zinc-900"
+                "mt-4 inline-flex items-center justify-between rounded-full px-3 py-1.5 text-xs font-medium transition-colors border",
+                theme === "dark"
+                  ? "bg-zinc-100 text-zinc-900 hover:bg-zinc-200 border-zinc-400"
+                  : "bg-white text-zinc-900 hover:bg-zinc-50 border-zinc-300",
               )}
             >
-              Why this portfolio?
-            </h2>
-            <div className="space-y-3">
-              <div className="flex items-start gap-3">
-                <div
-                  className={cn(
-                    "mt-0.5 rounded-full p-2",
-                    theme === "dark" ? "bg-zinc-800 text-zinc-100" : "bg-zinc-900/5 text-zinc-900"
-                  )}
-                >
-                  <Cpu className="w-4 h-4" />
-                </div>
-                <div>
-                  <div
-                    className={cn(
-                      "text-sm font-medium",
-                      theme === "dark" ? "text-zinc-100" : "text-zinc-900"
-                    )}
-                  >
-                    System-first frontend thinking
-                  </div>
-                  <p className={cn("text-xs", theme === "dark" ? "text-zinc-400" : "text-zinc-600")}>
-                    Built around structure, constraints, and how UI systems behave in production.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div
-                  className={cn(
-                    "mt-0.5 rounded-full p-2",
-                    theme === "dark" ? "bg-zinc-800 text-zinc-100" : "bg-zinc-900/5 text-zinc-900"
-                  )}
-                >
-                  <Layers className="w-4 h-4" />
-                </div>
-                <div>
-                  <div
-                    className={cn(
-                      "text-sm font-medium",
-                      theme === "dark" ? "text-zinc-100" : "text-zinc-900"
-                    )}
-                  >
-                    Real production experience
-                  </div>
-                  <p className={cn("text-xs", theme === "dark" ? "text-zinc-400" : "text-zinc-600")}>
-                    Work from Theta Technolabs and system-level personal projects like Kutumb OS.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div
-                  className={cn(
-                    "mt-0.5 rounded-full p-2",
-                    theme === "dark" ? "bg-zinc-800 text-zinc-100" : "bg-zinc-900/5 text-zinc-900"
-                  )}
-                >
-                  <Zap className="w-4 h-4" />
-                </div>
-                <div>
-                  <div
-                    className={cn(
-                      "text-sm font-medium",
-                      theme === "dark" ? "text-zinc-100" : "text-zinc-900"
-                    )}
-                  >
-                    Recruiter-friendly navigation
-                  </div>
-                  <p className={cn("text-xs", theme === "dark" ? "text-zinc-400" : "text-zinc-600")}>
-                    Dedicated recruiter mode for a 60-second view of identity, work, skills, and contact.
-                  </p>
-                </div>
-              </div>
+              Open developer mode
+              <ArrowRight className="h-3 w-3" />
+            </button>
+          </motion.article>
+
+          {/* Recruiter mode */}
+          <motion.article
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, delay: 0.1 }}
+            className={cn(
+              "flex flex-col justify-between rounded-2xl border p-4 shadow-sm",
+              theme === "dark"
+                ? "border-zinc-800 bg-zinc-900"
+                : "border-zinc-200 bg-white",
+            )}
+          >
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
+                Recruiter mode
+              </p>
+              <h2 className="text-sm font-semibold text-zinc-900">
+                Recruiter Profile
+              </h2>
+              <p className="text-xs leading-relaxed text-zinc-600">
+                For hiring managers and recruiters. A fast, familiar overview of
+                role, experience, projects, and skills.
+              </p>
             </div>
-          </div>
+            <button
+              type="button"
+              onClick={handleRecruiterView}
+              className={cn(
+                "mt-4 inline-flex items-center justify-between rounded-full px-3 py-1.5 text-xs font-medium shadow-sm transition-colors border",
+                theme === "dark"
+                  ? "bg-zinc-100 text-zinc-900 hover:bg-zinc-200 border-zinc-400"
+                  : "bg-white text-zinc-900 hover:bg-zinc-50 border-zinc-300",
+              )}
+            >
+              Open recruiter mode
+              <ArrowRight className="h-3 w-3" />
+            </button>
+          </motion.article>
+
+          {/* Non-tech mode */}
+          <motion.article
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, delay: 0.15 }}
+            className={cn(
+              "flex flex-col justify-between rounded-2xl border p-4 shadow-sm",
+              theme === "dark"
+                ? "border-zinc-800 bg-zinc-900"
+                : "border-zinc-200 bg-white",
+            )}
+          >
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
+                Non‑technical mode
+              </p>
+              <h2 className="text-sm font-semibold text-zinc-900">
+                Simple Overview
+              </h2>
+              <p className="text-xs leading-relaxed text-zinc-600">
+                For non-technical readers. A calm, plain-language view of what I
+                do and why it matters, without jargon.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleNonTechView}
+              className="mt-4 inline-flex items-center justify-between rounded-full border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-800 transition-colors hover:bg-zinc-50"
+            >
+              Open simple overview
+              <ArrowRight className="h-3 w-3" />
+            </button>
+          </motion.article>
         </section>
 
-        {/* CTAs */}
-        <div className="fixed bottom-6 right-6 flex flex-col items-end gap-2">
-          <button
-            onClick={handleEnterTerminal}
-            className={cn(
-              "flex items-center gap-2 px-6 py-2.5 text-sm font-medium rounded-full transition-colors active:scale-95 group",
-              theme === "dark"
-                ? "bg-zinc-100 text-zinc-900 hover:bg-zinc-200"
-                : "bg-zinc-900 text-white hover:bg-zinc-800 shadow-sm"
-            )}
-          >
-            Enter Terminal Mode
-            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-          </button>
-          <button
-            onClick={handleRecruiterView}
-            className={cn(
-              "flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium rounded-full border active:scale-95",
-              theme === "dark"
-                ? "bg-zinc-900 text-zinc-100 border-zinc-700 hover:bg-zinc-800"
-                : "bg-white text-zinc-800 border-zinc-300 hover:bg-zinc-50"
-            )}
-          >
-            Recruiter View
-          </button>
-        </div>
+        {/* Small reassurance for all audiences */}
+        <section
+          className={cn(
+            "max-w-3xl rounded-2xl border border-dashed p-4 text-xs",
+            theme === "dark"
+              ? "border-zinc-700/80 bg-zinc-900/40 text-zinc-400"
+              : "border-zinc-300/80 bg-zinc-50/80 text-zinc-600",
+          )}
+        >
+          <p>
+            All three modes point to the same underlying work. The only thing
+            that changes is how it&apos;s presented—so you can choose the view
+            that feels most natural to you.
+          </p>
+        </section>
       </main>
     </div>
   );

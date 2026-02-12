@@ -6,11 +6,15 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import LandingPage from "@/pages/landing";
 import TerminalPage from "@/pages/terminal-view";
+import RecruiterView from "@/views/RecruiterView";
+import NonTechView from "@/views/NonTechView";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={LandingPage} />
+      <Route path="/recruiter" component={RecruiterView} />
+      <Route path="/non-tech" component={NonTechView} />
       <Route path="/terminal" component={TerminalPage} />
       <Route component={NotFound} />
     </Switch>

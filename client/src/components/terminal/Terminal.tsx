@@ -338,11 +338,46 @@ export function Terminal({ initialCommand }: { initialCommand?: string } = {}) {
             </div>
           )}
           <div className="flex flex-wrap gap-2 items-center">
-             <span className="text-terminal-dim text-xs mr-2">Suggested:</span>
-             <SuggestionChip cmd="status" alias="s" />
-             <SuggestionChip cmd="projects" alias="p" />
-             <SuggestionChip cmd="arch" alias="a" />
-             <SuggestionChip cmd="recruiter" alias="r" />
+            <span className="text-terminal-dim text-xs mr-2">Suggested:</span>
+            <SuggestionChip cmd="status" alias="s" />
+            <SuggestionChip cmd="projects" alias="p" />
+            <SuggestionChip cmd="arch" alias="a" />
+            <SuggestionChip cmd="recruiter" alias="r" />
+          </div>
+
+          {/* View mode switching */}
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-terminal-dim">
+            <span className="mr-1">Views:</span>
+            <button
+              type="button"
+              className="px-2 py-0.5 rounded-full border border-terminal-border/60 text-terminal-fg/80 hover:text-terminal-accent hover:border-terminal-accent/60 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                setLocation("/terminal");
+              }}
+            >
+              Developer
+            </button>
+            <button
+              type="button"
+              className="px-2 py-0.5 rounded-full border border-terminal-border/60 text-terminal-fg/80 hover:text-terminal-accent hover:border-terminal-accent/60 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                setLocation("/recruiter");
+              }}
+            >
+              Recruiter
+            </button>
+            <button
+              type="button"
+              className="px-2 py-0.5 rounded-full border border-terminal-border/60 text-terminal-fg/80 hover:text-terminal-accent hover:border-terminal-accent/60 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                setLocation("/non-tech");
+              }}
+            >
+              Simple
+            </button>
           </div>
 
           {/* Exploration indicator */}
